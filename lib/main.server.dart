@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/server.dart';
 import 'package:potube_web/app.dart';
@@ -5,17 +7,25 @@ import 'package:potube_web/app.dart';
 void main() {
   Jaspr.initializeApp();
 
+  final gaMeasurementId = Platform.environment['GA_MEASUREMENT_ID']?.trim() ?? '';
+  final googleSiteVerification = Platform.environment['GOOGLE_SITE_VERIFICATION']?.trim() ?? '';
+
   runApp(
     Document(
       title: 'Potube Web — Converti i tuoi media in MP3',
       lang: 'it',
-      meta: const {
-        'description': 'Converti i tuoi file audio e video in MP3 direttamente dal browser. Upload temporanei, qualità selezionabile e interfaccia semplice.',
+      meta: {
+        'description': 'Converti i tuoi file audio e video in MP3 direttamente dal browser. Upload temporanei, beta gratuita e interfaccia semplice.',
         'theme-color': '#0d0f14',
+        'robots': 'index,follow,max-image-preview:large',
+        if (gaMeasurementId.isNotEmpty) 'potube-ga-id': gaMeasurementId,
+        if (googleSiteVerification.isNotEmpty) 'google-site-verification': googleSiteVerification,
       },
-      head: const [
+      head: [
         link(rel: 'stylesheet', href: '/styles.css'),
         link(rel: 'icon', href: '/favicon.svg', attributes: {'type': 'image/svg+xml'}),
+        el('script', attributes: {'src': '/privacy-consent.js', 'defer': ''}),
+        el('script', attributes: {'src': '/analytics.js', 'defer': ''}),
       ],
       body: const App(),
     ),
