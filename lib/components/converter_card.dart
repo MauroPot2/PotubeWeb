@@ -1,6 +1,5 @@
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
-import 'package:potube_web/components/site_scaffold.dart';
 
 class ConverterCard extends StatelessComponent {
   const ConverterCard({super.key});
@@ -14,6 +13,10 @@ class ConverterCard extends StatelessComponent {
         el('p', children: [
           text('Il file viene usato solo per la conversione e rimosso dal server al termine della richiesta.'),
         ]),
+      ]),
+      el('div', classes: 'free-badge', children: [
+        el('strong', children: [text('Free beta')]),
+        text(' · 3 conversioni ogni 24 ore · max 25 MB · fino a 192 kbps'),
       ]),
       el(
         'form',
@@ -42,9 +45,8 @@ class ConverterCard extends StatelessComponent {
               el('select', attributes: {'name': 'quality'}, children: [
                 _option('128', '128 kbps'),
                 _option('192', '192 kbps', selected: true),
-                _option('256', '256 kbps'),
-                _option('320', '320 kbps'),
               ]),
+              el('small', classes: 'field-hint', children: [text('256 e 320 kbps arriveranno con Potube Pro.')]),
             ]),
             el('div', classes: 'checks', children: [
               _check('normalize', 'Normalizza il volume'),
