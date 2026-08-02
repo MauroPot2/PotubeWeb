@@ -1,8 +1,25 @@
 # Potube Web
 
-Potube Web è la versione web, upload-first, di Potube: converte file audio/video caricati direttamente dall'utente in MP3 tramite FFmpeg.
+Potube Web è un converter web upload-first: trasforma file audio/video caricati direttamente dall'utente in MP3 tramite FFmpeg.
 
 > Non contiene un downloader YouTube pubblico e non accetta URL di piattaforme di streaming.
+
+## Fase 1 — Validation MVP
+
+La prima versione pubblica è volutamente limitata per validare traffico e interesse senza esporre il progetto a costi Cloud Run imprevedibili.
+
+### Free beta
+
+- 3 conversioni ogni 24 ore per utente/IP, best-effort
+- massimo 25 MB per file
+- MP3 a 128 o 192 kbps
+- normalizzazione volume opzionale
+- metadata opzionali
+- file temporanei eliminati dopo la risposta
+- nessun account e nessuna persistenza utente
+- spazi advertising solo placeholder finché AdSense/CMP non sono pronti
+
+I bitrate 256/320 kbps e limiti superiori sono riservati alla futura evoluzione Pro.
 
 ## Stack
 
@@ -11,18 +28,21 @@ Potube Web è la versione web, upload-first, di Potube: converte file audio/vide
 - Firebase Hosting come edge/router
 - Cloud Run per il frontend Jaspr
 - FastAPI + FFmpeg su un secondo servizio Cloud Run
-- spazi pubblicitari predisposti come placeholder, da attivare solo dopo approvazione e CMP/privacy complete
+- GA4 opzionale e caricato soltanto dopo consenso
+- Search Console configurabile tramite meta verification runtime
 
 ## Struttura
 
 ```text
 PotubeWeb/
 ├── lib/                       # Jaspr SSR
-├── web/                       # CSS, favicon, SEO assets
+├── web/                       # CSS, JS privacy/analytics, favicon, SEO assets
 ├── backend/                   # FastAPI + FFmpeg
+├── scripts/deploy_safe.sh     # deploy Cloud Run con limiti costi
 ├── Dockerfile                 # Cloud Run frontend
 ├── firebase.json              # /api/** -> backend, ** -> Jaspr
-└── .github/workflows/         # build/check automatici
+├── DEPLOY.md                  # checklist produzione
+└── .github/workflows/         # build/test automatici
 ```
 
 ## Avvio frontend
@@ -47,7 +67,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8081
 ```
 
-Per testare il backend direttamente:
+Test rapido:
 
 ```bash
 curl -F "file=@/percorso/video.mp4" \
@@ -58,70 +78,97 @@ curl -F "file=@/percorso/video.mp4" \
   --output output.mp3
 ```
 
-Durante lo sviluppo il form Jaspr usa `/api/convert`. Per un test locale completo puoi usare un reverse proxy, oppure modificare temporaneamente l'action del form verso `http://localhost:8081/api/convert`.
+## Protezioni costi e abuso
 
-## Limiti MVP
+Il backend espone configurazioni tramite environment variables:
 
-- upload massimo MVP: 25 MB (`MAX_UPLOAD_BYTES`)
-- timeout conversione MVP: 50 secondi (`CONVERSION_TIMEOUT_SECONDS`)
-- formati consentiti: MP3, M4A, AAC, WAV, FLAC, OGG, MP4, MOV, MKV, WEBM, AVI, M4V
-- file temporanei eliminati dopo il download o in caso di errore
-- nessuna persistenza utente
-- nessun URL remoto
-
-## Deploy Google Cloud
-
-Sostituisci `YOUR_PROJECT_ID`.
-
-### 1. Backend
-
-```bash
-gcloud run deploy potube-converter-api \
-  --source backend \
-  --project YOUR_PROJECT_ID \
-  --region europe-west1 \
-  --allow-unauthenticated \
-  --memory 1Gi \
-  --cpu 1 \
-  --timeout 60 \
-  --max-instances 2 \
-  --set-env-vars MAX_UPLOAD_BYTES=26214400,CONVERSION_TIMEOUT_SECONDS=50
+```text
+MAX_UPLOAD_BYTES=26214400
+CONVERSION_TIMEOUT_SECONDS=50
+MAX_DAILY_CONVERSIONS=3
+RATE_LIMIT_WINDOW_SECONDS=86400
+MAX_FREE_BITRATE=192
 ```
 
-### 2. Frontend Jaspr
+Il rate-limit dell'MVP è in-memory: riduce gli abusi ma può azzerarsi quando l'istanza Cloud Run scala a zero. La protezione economica reale è data anche dai limiti infrastrutturali del deploy.
+
+Lo script:
 
 ```bash
-gcloud run deploy potube-web \
-  --source . \
-  --project YOUR_PROJECT_ID \
-  --region europe-west1 \
-  --allow-unauthenticated \
-  --min-instances 0 \
-  --max-instances 2
+bash scripts/deploy_safe.sh
 ```
 
-### 3. Firebase Hosting
+forza per il converter:
+
+- `min-instances=0`
+- `max-instances=1`
+- `concurrency=1`
+- 1 vCPU
+- 512 MiB RAM
+- timeout 50 secondi
+- request-based CPU throttling
+
+Il frontend usa anch'esso `min-instances=0` e `max-instances=1`.
+
+Lo script interrompe il deploy se il progetto gcloud attivo non è `potube-web-mauro`.
+
+## Analytics e Search Console
+
+Nessun ID viene salvato nel repository. Il server Jaspr legge a runtime:
+
+```text
+GA_MEASUREMENT_ID
+GOOGLE_SITE_VERIFICATION
+```
+
+Se `GA_MEASUREMENT_ID` non è configurato, Google Analytics non viene caricato. Quando è presente, viene mostrata una scelta privacy e GA4 viene caricato solo dopo consenso esplicito.
+
+Esempio di configurazione futura:
 
 ```bash
+gcloud run services update potube-web \
+  --project potube-web-mauro \
+  --region europe-west1 \
+  --update-env-vars="GA_MEASUREMENT_ID=G-XXXXXXXXXX,GOOGLE_SITE_VERIFICATION=TOKEN"
+```
+
+Gli spazi AdSense restano disattivati durante la validazione iniziale. Prima di attivare advertising per utenti SEE va adottata una CMP adeguata e aggiornata la documentazione privacy.
+
+## SEO
+
+Asset inclusi:
+
+- `robots.txt`
+- `sitemap.xml`
+- SSR Jaspr
+- meta description e robots
+- guida `/guide/mp3-bitrate`
+
+URL Firebase previsto:
+
+```text
+https://potube-web-mauro.web.app
+```
+
+Se verrà aggiunto un dominio custom, `robots.txt` e `sitemap.xml` andranno aggiornati al dominio canonico.
+
+## Test
+
+Frontend:
+
+```bash
+dart analyze
 jaspr build
-firebase use YOUR_PROJECT_ID
-firebase deploy --only hosting
 ```
 
-## Prima della produzione
+Backend:
 
-1. Sostituire `potube.example` in `robots.txt` e `sitemap.xml`.
-2. Completare Privacy Policy e Termini con i dati reali del titolare.
-3. Implementare CMP/cookie consent prima di analytics o advertising che lo richiedano.
-4. Inserire AdSense solo dopo l'approvazione, mantenendo gli annunci chiaramente separati dal pulsante di conversione/download.
-5. Valutare rate limiting, Cloud Armor e budget alert prima di aprire il servizio al traffico pubblico.
-6. Per superare 25–30 MB, passare a upload diretto su Cloud Storage + job asincroni: Cloud Run HTTP/1 ha un limite di 32 MiB per richiesta e le rewrite dinamiche Firebase Hosting hanno timeout di 60 secondi.
+```bash
+python -m unittest discover -s backend/tests -v
+```
 
-## Monetizzazione
+GitHub Actions esegue automaticamente build Jaspr, compile check Python e test backend sulle pull request.
 
-Gli `AdSlot` nel frontend sono solo placeholder grafici. Non contengono publisher ID, script o unità pubblicitarie reali.
+## Deploy
 
-Una possibile evoluzione:
-
-- Free: limite file + advertising
-- Pro: file più grandi, batch conversion, no ads, preset audio, metadata editor
+La procedura completa e i controlli pre-produzione sono in [DEPLOY.md](DEPLOY.md).
