@@ -13,12 +13,13 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
-app = FastAPI(title="Potube Converter API", version="0.2.0")
+app = FastAPI(title="Potube Converter API", version="0.2.1")
 
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
-CONVERSION_TIMEOUT_SECONDS = int(os.getenv("CONVERSION_TIMEOUT_SECONDS", "50"))
+CONVERSION_TIMEOUT_SECONDS = int(os.getenv("CONVERSION_TIMEOUT_SECONDS", "35"))
 MAX_DAILY_CONVERSIONS = int(os.getenv("MAX_DAILY_CONVERSIONS", "3"))
 RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", str(24 * 60 * 60)))
+MAX_RATE_BUCKETS = int(os.getenv("MAX_RATE_BUCKETS", "5000"))
 MAX_FREE_BITRATE = int(os.getenv("MAX_FREE_BITRATE", "192"))
 
 ALLOWED_EXTENSIONS = {
@@ -50,6 +51,32 @@ def _client_key(request: Request) -> str:
     return "unknown"
 
 
+def _prune_rate_buckets_locked(cutoff: float) -> None:
+    """Remove expired attempts for every client while the rate lock is held."""
+    empty_keys: list[str] = []
+    for key, attempts in _rate_buckets.items():
+        active = [stamp for stamp in attempts if stamp > cutoff]
+        if active:
+            _rate_buckets[key] = active
+        else:
+            empty_keys.append(key)
+
+    for key in empty_keys:
+        _rate_buckets.pop(key, None)
+
+
+def _evict_oldest_rate_bucket_locked(client_key: str) -> None:
+    """Keep the in-memory limiter bounded even under many distinct client keys."""
+    if client_key in _rate_buckets or len(_rate_buckets) < MAX_RATE_BUCKETS:
+        return
+
+    oldest_key = min(
+        _rate_buckets,
+        key=lambda key: _rate_buckets[key][-1] if _rate_buckets[key] else float("-inf"),
+    )
+    _rate_buckets.pop(oldest_key, None)
+
+
 def _consume_rate_limit(client_key: str, now: float | None = None) -> tuple[int, int]:
     """Consume one free conversion and return (remaining, reset_seconds).
 
@@ -63,7 +90,10 @@ def _consume_rate_limit(client_key: str, now: float | None = None) -> tuple[int,
     cutoff = current - RATE_LIMIT_WINDOW_SECONDS
 
     with _rate_lock:
-        attempts = [stamp for stamp in _rate_buckets.get(client_key, []) if stamp > cutoff]
+        _prune_rate_buckets_locked(cutoff)
+        _evict_oldest_rate_bucket_locked(client_key)
+
+        attempts = list(_rate_buckets.get(client_key, []))
         if len(attempts) >= MAX_DAILY_CONVERSIONS:
             oldest = min(attempts)
             retry_after = max(1, int(RATE_LIMIT_WINDOW_SECONDS - (current - oldest)))
@@ -106,7 +136,9 @@ def health() -> dict[str, object]:
         "ok": True,
         "ffmpeg": shutil.which("ffmpeg") is not None,
         "max_upload_mb": round(MAX_UPLOAD_BYTES / 1024 / 1024),
+        "conversion_timeout_seconds": CONVERSION_TIMEOUT_SECONDS,
         "max_daily_conversions": MAX_DAILY_CONVERSIONS,
+        "max_rate_buckets": MAX_RATE_BUCKETS,
         "max_free_bitrate": MAX_FREE_BITRATE,
     }
 
