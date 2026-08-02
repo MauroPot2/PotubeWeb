@@ -10,7 +10,7 @@ class PotubeBackendTests(unittest.TestCase):
         main._reset_rate_limits_for_tests()
 
     def test_safe_stem_removes_unsafe_characters(self):
-        self.assertEqual(main._safe_stem('../ciao<>:"?.mp4'), 'ciao.mp4')
+        self.assertEqual(main._safe_stem('../ciao<>:"?.mp4'), 'ciao')
 
     def test_rate_limit_allows_configured_free_quota(self):
         original_limit = main.MAX_DAILY_CONVERSIONS
