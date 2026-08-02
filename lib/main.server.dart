@@ -24,8 +24,14 @@ void main() {
       head: [
         link(rel: 'stylesheet', href: '/styles.css'),
         link(rel: 'icon', href: '/favicon.svg', attributes: {'type': 'image/svg+xml'}),
-        el('script', attributes: {'src': '/privacy-consent.js', 'defer': ''}),
-        el('script', attributes: {'src': '/analytics.js', 'defer': ''}),
+        Component.element(
+          tag: 'script',
+          attributes: {'src': '/privacy-consent.js', 'defer': ''},
+        ),
+        Component.element(
+          tag: 'script',
+          attributes: {'src': '/analytics.js', 'defer': ''},
+        ),
       ],
       body: const App(),
     ),
