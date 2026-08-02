@@ -2,7 +2,7 @@ import unittest
 
 from fastapi import HTTPException
 
-from app import main
+from backend.app import main
 
 
 class PotubeBackendTests(unittest.TestCase):
