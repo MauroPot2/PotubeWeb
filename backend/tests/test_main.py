@@ -43,6 +43,39 @@ class PotubeBackendTests(unittest.TestCase):
         finally:
             main.MAX_DAILY_CONVERSIONS = original_limit
 
+    def test_rate_limit_prunes_expired_buckets_globally(self):
+        original_window = main.RATE_LIMIT_WINDOW_SECONDS
+        try:
+            main.RATE_LIMIT_WINDOW_SECONDS = 10
+            main._consume_rate_limit('expired-client', now=1000)
+            self.assertIn('expired-client', main._rate_buckets)
+
+            main._consume_rate_limit('active-client', now=1011)
+
+            self.assertNotIn('expired-client', main._rate_buckets)
+            self.assertIn('active-client', main._rate_buckets)
+        finally:
+            main.RATE_LIMIT_WINDOW_SECONDS = original_window
+
+    def test_rate_limit_bucket_count_is_bounded(self):
+        original_max_buckets = main.MAX_RATE_BUCKETS
+        original_window = main.RATE_LIMIT_WINDOW_SECONDS
+        try:
+            main.MAX_RATE_BUCKETS = 2
+            main.RATE_LIMIT_WINDOW_SECONDS = 1000
+
+            main._consume_rate_limit('client-a', now=1000)
+            main._consume_rate_limit('client-b', now=1001)
+            main._consume_rate_limit('client-c', now=1002)
+
+            self.assertEqual(len(main._rate_buckets), 2)
+            self.assertNotIn('client-a', main._rate_buckets)
+            self.assertIn('client-b', main._rate_buckets)
+            self.assertIn('client-c', main._rate_buckets)
+        finally:
+            main.MAX_RATE_BUCKETS = original_max_buckets
+            main.RATE_LIMIT_WINDOW_SECONDS = original_window
+
 
 if __name__ == '__main__':
     unittest.main()
