@@ -1,5 +1,6 @@
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
+import 'package:potube_web/components/site_scaffold.dart';
 
 class ConverterCard extends StatelessComponent {
   const ConverterCard({super.key});
