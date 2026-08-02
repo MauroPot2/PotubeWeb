@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://potube.example/</loc></url>
+  <url><loc>https://potube.example/guide/mp3-bitrate</loc></url>
+  <url><loc>https://potube.example/privacy</loc></url>
+  <url><loc>https://potube.example/terms</loc></url>
+  <url><loc>https://potube.example/copyright</loc></url>
+</urlset>

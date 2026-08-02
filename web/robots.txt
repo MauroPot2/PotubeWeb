@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Aggiorna il dominio prima del deploy pubblico.
+Sitemap: https://potube.example/sitemap.xml
