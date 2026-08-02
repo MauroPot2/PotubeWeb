@@ -3,6 +3,8 @@ set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-potube-web-mauro}"
 REGION="${REGION:-europe-west1}"
+BUILD_SA_EMAIL="${BUILD_SA_EMAIL:-potube-build@${PROJECT_ID}.iam.gserviceaccount.com}"
+RUNTIME_SA_EMAIL="${RUNTIME_SA_EMAIL:-potube-runtime@${PROJECT_ID}.iam.gserviceaccount.com}"
 ACTIVE_PROJECT="$(gcloud config get-value project 2>/dev/null || true)"
 
 if [[ "$ACTIVE_PROJECT" != "$PROJECT_ID" ]]; then
@@ -13,9 +15,19 @@ if [[ "$ACTIVE_PROJECT" != "$PROJECT_ID" ]]; then
   exit 1
 fi
 
+for service_account in "$BUILD_SA_EMAIL" "$RUNTIME_SA_EMAIL"; do
+  if ! gcloud iam service-accounts describe "$service_account" --project="$PROJECT_ID" >/dev/null 2>&1; then
+    echo "❌ Service account mancante: $service_account"
+    echo "   Esegui prima: bash scripts/setup_cloud_iam.sh"
+    exit 1
+  fi
+done
+
 echo "🔒 Deploy Potube Web con limiti conservativi"
-echo "   project: $PROJECT_ID"
-echo "   region:  $REGION"
+echo "   project:  $PROJECT_ID"
+echo "   region:   $REGION"
+echo "   build SA: $BUILD_SA_EMAIL"
+echo "   run SA:   $RUNTIME_SA_EMAIL"
 
 # Abilitare le API non avvia istanze né crea costi fissi.
 gcloud services enable \
@@ -29,6 +41,8 @@ gcloud services enable \
 # margine a upload, parsing e consegna della risposta senza aumentare la scala.
 gcloud run deploy potube-converter-api \
   --source backend \
+  --build-service-account="projects/$PROJECT_ID/serviceAccounts/$BUILD_SA_EMAIL" \
+  --service-account="$RUNTIME_SA_EMAIL" \
   --project="$PROJECT_ID" \
   --region="$REGION" \
   --allow-unauthenticated \
@@ -44,6 +58,8 @@ gcloud run deploy potube-converter-api \
 # Frontend SSR: scala a zero, una sola istanza massima.
 gcloud run deploy potube-web \
   --source . \
+  --build-service-account="projects/$PROJECT_ID/serviceAccounts/$BUILD_SA_EMAIL" \
+  --service-account="$RUNTIME_SA_EMAIL" \
   --project="$PROJECT_ID" \
   --region="$REGION" \
   --allow-unauthenticated \

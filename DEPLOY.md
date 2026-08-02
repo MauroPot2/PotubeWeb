@@ -34,7 +34,22 @@ firebase init hosting
 
 Mantieni il `firebase.json` presente nel repository: `/api/**` viene instradato a `potube-converter-api`, tutto il resto a `potube-web`.
 
-## 3. Deploy Cloud Run con limiti conservativi
+## 3. IAM dedicato per build e runtime
+
+I progetti Google Cloud recenti possono usare il Compute Engine default service account per Cloud Build senza i permessi necessari al deploy da sorgente. Potube evita di ampliare i privilegi dell'account predefinito e usa due identità dedicate:
+
+- `potube-build@potube-web-mauro.iam.gserviceaccount.com`: riceve solo `roles/run.builder`
+- `potube-runtime@potube-web-mauro.iam.gserviceaccount.com`: nessun ruolo di progetto aggiuntivo per l'MVP
+
+Configurazione una tantum:
+
+```bash
+bash scripts/setup_cloud_iam.sh
+```
+
+Lo script verifica progetto/account attivi, crea i service account se mancanti e concede al deployer solo il permesso di usarli.
+
+## 4. Deploy Cloud Run con limiti conservativi
 
 Usa lo script versionato nel repository:
 
@@ -42,10 +57,12 @@ Usa lo script versionato nel repository:
 bash scripts/deploy_safe.sh
 ```
 
-Lo script blocca il deploy se il progetto gcloud attivo non è `potube-web-mauro` e forza:
+Lo script blocca il deploy se il progetto gcloud attivo non è `potube-web-mauro`, verifica che i service account dedicati esistano e forza:
 
 ### Converter
 
+- build service account dedicato `potube-build`
+- runtime service account dedicato `potube-runtime`
 - min instances: 0
 - max instances: 1
 - concurrency: 1
@@ -62,13 +79,15 @@ Il timeout Cloud Run è volutamente superiore a quello FFmpeg per lasciare margi
 
 ### Frontend
 
+- build service account dedicato `potube-build`
+- runtime service account dedicato `potube-runtime`
 - min instances: 0
 - max instances: 1
 - concurrency: 20
 - CPU: 1
 - RAM: 512 MiB
 
-## 4. Verifica backend
+## 5. Verifica backend
 
 Recupera l'URL del servizio:
 
@@ -85,7 +104,7 @@ Poi:
 curl "$(gcloud run services describe potube-converter-api --project potube-web-mauro --region europe-west1 --format='value(status.url)')/api/health"
 ```
 
-## 5. Analytics e Search Console
+## 6. Analytics e Search Console
 
 Lascia GA4 disattivato fino a quando non hai creato la property. Il frontend non carica Analytics se `GA_MEASUREMENT_ID` è assente e, anche quando configurato, lo carica soltanto dopo consenso.
 
@@ -98,7 +117,7 @@ gcloud run services update potube-web \
   --update-env-vars="GA_MEASUREMENT_ID=G-XXXXXXXXXX,GOOGLE_SITE_VERIFICATION=TOKEN_SEARCH_CONSOLE"
 ```
 
-## 6. Firebase Hosting
+## 7. Firebase Hosting
 
 Dopo che i due servizi Cloud Run esistono:
 
@@ -114,7 +133,7 @@ URL atteso del sito predefinito:
 https://potube-web-mauro.web.app
 ```
 
-## 7. Prima di aprire al traffico
+## 8. Prima di aprire al traffico
 
 - [ ] `/api/health` risponde correttamente
 - [ ] `conversion_timeout_seconds` vale 35
@@ -124,5 +143,6 @@ https://potube-web-mauro.web.app
 - [ ] quarta conversione nella finestra di 24h riceve HTTP 429, salvo reset istanza
 - [ ] budget e notifiche billing attivi
 - [ ] `max-instances=1` verificato sui due servizi
+- [ ] build e runtime usano i service account Potube dedicati
 - [ ] Privacy/Terms ricontrollati con i dati reali del titolare
 - [ ] AdSense ancora disattivato finché sito, privacy e CMP non sono pronti
