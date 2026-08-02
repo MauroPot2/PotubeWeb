@@ -51,10 +51,14 @@ Lo script blocca il deploy se il progetto gcloud attivo non è `potube-web-mauro
 - concurrency: 1
 - CPU: 1
 - RAM: 512 MiB
-- timeout: 50 s
+- timeout richiesta Cloud Run: 60 s
+- timeout FFmpeg applicativo: 35 s
 - max upload applicativo: 25 MB
 - max 3 conversioni / 24h per IP, best-effort
+- massimo 5.000 bucket client mantenuti in memoria
 - bitrate Free massimo: 192 kbps
+
+Il timeout Cloud Run è volutamente superiore a quello FFmpeg per lasciare margine a upload, parsing e consegna della risposta. Il rate limiter ripulisce globalmente i bucket scaduti e applica anche un limite assoluto alla propria memoria.
 
 ### Frontend
 
@@ -113,6 +117,8 @@ https://potube-web-mauro.web.app
 ## 7. Prima di aprire al traffico
 
 - [ ] `/api/health` risponde correttamente
+- [ ] `conversion_timeout_seconds` vale 35
+- [ ] `max_rate_buckets` vale 5000
 - [ ] conversione reale con file piccolo riuscita
 - [ ] file >25 MB rifiutato
 - [ ] quarta conversione nella finestra di 24h riceve HTTP 429, salvo reset istanza
