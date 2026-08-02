@@ -14,15 +14,15 @@ class HomePage extends StatelessComponent {
         el('section', classes: 'hero', children: [
           el('div', classes: 'container hero-grid', children: [
             el('div', classes: 'hero-copy', children: [
-              el('span', classes: 'pill', children: [text('Potube Web · v0.1')]),
+              el('span', classes: 'pill', children: [text('Potube Web · beta gratuita')]),
               el('h1', children: [text('Il tuo media. Il tuo audio.')]),
               el('p', classes: 'hero-lead', children: [
-                text('Converti i tuoi file audio e video in MP3 con una procedura semplice, trasparente e pensata per il web.'),
+                text('Converti i tuoi file audio e video in MP3 con una procedura semplice, temporanea e pensata per il web.'),
               ]),
               el('div', classes: 'hero-points', children: [
                 _point('Upload temporanei'),
-                _point('FFmpeg'),
-                _point('128–320 kbps'),
+                _point('3 conversioni / 24h'),
+                _point('Fino a 192 kbps'),
               ]),
             ]),
             const ConverterCard(),
@@ -46,7 +46,7 @@ class HomePage extends StatelessComponent {
           el('div', classes: 'container content-grid', children: [
             el('article', children: [
               el('span', classes: 'eyebrow', children: [text('GUIDA RAPIDA')]),
-              el('h2', children: [text('192 o 320 kbps?')]),
+              el('h2', children: [text('128 o 192 kbps?')]),
               el('p', children: [
                 text('Il bitrate definisce quanto spazio usa l’MP3. Un bitrate più alto riduce la compressione, ma non può ricreare dettagli che non esistono nella sorgente.'),
               ]),
@@ -64,8 +64,9 @@ class HomePage extends StatelessComponent {
               el('h2', children: [text('Domande frequenti')]),
             ]),
             _faq('Posso inserire un link YouTube?', 'No. La versione web è progettata per elaborare esclusivamente file caricati direttamente dall’utente.'),
+            _faq('Quante conversioni posso fare?', 'Durante la beta gratuita il limite è di 3 conversioni ogni 24 ore per utente/IP. Il contatore MVP è best-effort e serve soprattutto a ridurre abusi.'),
             _faq('Quanto rimane online il mio file?', 'La conversione usa una directory temporanea che viene eliminata dopo l’invio del file risultante.'),
-            _faq('320 kbps migliora sempre la qualità?', 'No. È il bitrate della ricodifica MP3; non aggiunge informazioni che la sorgente non contiene.'),
+            _faq('Perché il limite è 192 kbps?', 'La fase di validazione mantiene bassi i costi operativi. I bitrate 256 e 320 kbps sono previsti per la futura versione Pro.'),
           ]),
         ]),
       ]),
