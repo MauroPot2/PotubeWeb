@@ -84,13 +84,16 @@ Il backend espone configurazioni tramite environment variables:
 
 ```text
 MAX_UPLOAD_BYTES=26214400
-CONVERSION_TIMEOUT_SECONDS=50
+CONVERSION_TIMEOUT_SECONDS=35
 MAX_DAILY_CONVERSIONS=3
 RATE_LIMIT_WINDOW_SECONDS=86400
+MAX_RATE_BUCKETS=5000
 MAX_FREE_BITRATE=192
 ```
 
-Il rate-limit dell'MVP è in-memory: riduce gli abusi ma può azzerarsi quando l'istanza Cloud Run scala a zero. La protezione economica reale è data anche dai limiti infrastrutturali del deploy.
+Il rate-limit dell'MVP è in-memory: riduce gli abusi ma può azzerarsi quando l'istanza Cloud Run scala a zero. I bucket scaduti vengono ripuliti globalmente e il numero di client mantenuti in memoria è limitato a 5.000, così il dizionario non può crescere senza limite durante traffico prolungato.
+
+La protezione economica reale è data anche dai limiti infrastrutturali del deploy.
 
 Lo script:
 
@@ -105,8 +108,11 @@ forza per il converter:
 - `concurrency=1`
 - 1 vCPU
 - 512 MiB RAM
-- timeout 50 secondi
+- timeout richiesta Cloud Run: 60 secondi
+- timeout FFmpeg applicativo: 35 secondi
 - request-based CPU throttling
+
+Il margine tra 35 e 60 secondi lascia tempo a upload, parsing e consegna della risposta senza aumentare la capacità massima del servizio.
 
 Il frontend usa anch'esso `min-instances=0` e `max-instances=1`.
 
