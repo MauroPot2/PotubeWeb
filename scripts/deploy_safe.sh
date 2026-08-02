@@ -25,6 +25,8 @@ gcloud services enable \
   --project="$PROJECT_ID"
 
 # Converter: una sola istanza, una sola conversione contemporanea.
+# FFmpeg ha 35s di timeout applicativo; Cloud Run resta a 60s per lasciare
+# margine a upload, parsing e consegna della risposta senza aumentare la scala.
 gcloud run deploy potube-converter-api \
   --source backend \
   --project="$PROJECT_ID" \
@@ -35,9 +37,9 @@ gcloud run deploy potube-converter-api \
   --concurrency=1 \
   --cpu=1 \
   --memory=512Mi \
-  --timeout=50s \
+  --timeout=60s \
   --cpu-throttling \
-  --set-env-vars="MAX_UPLOAD_BYTES=26214400,CONVERSION_TIMEOUT_SECONDS=50,MAX_DAILY_CONVERSIONS=3,MAX_FREE_BITRATE=192"
+  --set-env-vars="MAX_UPLOAD_BYTES=26214400,CONVERSION_TIMEOUT_SECONDS=35,MAX_DAILY_CONVERSIONS=3,MAX_FREE_BITRATE=192,MAX_RATE_BUCKETS=5000"
 
 # Frontend SSR: scala a zero, una sola istanza massima.
 gcloud run deploy potube-web \
