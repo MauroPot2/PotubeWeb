@@ -14,12 +14,14 @@ void main() {
 
   runApp(
     Document(
-      title: 'Potube Web — Converti i tuoi media in MP3',
+      title: 'Potube Web — Converti i tuoi file audio e video in MP3',
       lang: 'it',
       meta: {
         'description':
-            'Converti i tuoi file audio e video in MP3 direttamente dal browser. Upload temporanei, beta gratuita e interfaccia semplice.',
+            'Converti i tuoi file audio e video in MP3 dal browser con upload temporanei, bitrate selezionabile e normalizzazione opzionale.',
+        'application-name': 'Potube Web',
         'theme-color': '#0d0f14',
+        'referrer': 'strict-origin-when-cross-origin',
         'robots': 'index,follow,max-image-preview:large',
         'google-adsense-account': 'ca-pub-2871209384703483',
         if (gaMeasurementId.isNotEmpty) 'potube-ga-id': gaMeasurementId,
@@ -28,6 +30,7 @@ void main() {
       },
       head: [
         link(rel: 'stylesheet', href: '/styles.css'),
+        link(rel: 'stylesheet', href: '/polish.css'),
         link(
           rel: 'icon',
           href: '/favicon.svg',
