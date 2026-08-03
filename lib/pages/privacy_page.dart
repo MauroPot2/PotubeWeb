@@ -9,25 +9,65 @@ class PrivacyPage extends StatelessComponent {
   Component build(BuildContext context) {
     return SiteScaffold(
       child: el('article', classes: 'container legal-page', children: [
+        el('span', classes: 'eyebrow', children: [text('INFORMAZIONI LEGALI')]),
         el('h1', children: [text('Privacy Policy')]),
-        el('p', children: [
-          text('Informativa tecnica della beta di Potube Web. Prima della pubblicazione definitiva va completata con i dati del titolare, i contatti e gli eventuali fornitori definitivi.'),
+        el('p', classes: 'legal-updated', children: [text('Ultimo aggiornamento: 3 agosto 2026')]),
+        el('p', classes: 'article-lead', children: [
+          text(
+            'Questa informativa descrive in modo trasparente quali dati tecnici può trattare Potube Web durante l’uso del sito e del convertitore.',
+          ),
         ]),
-        el('h2', children: [text('File caricati')]),
+        el('h2', children: [text('File caricati e conversione')]),
         el('p', children: [
-          text('Il backend usa file temporanei esclusivamente per eseguire la conversione. La directory temporanea viene eliminata dopo l’invio del risultato o in caso di errore. Potube Web non offre uno storico dei file e non utilizza i file caricati per finalità pubblicitarie o di analytics.'),
+          text(
+            'I file inviati al convertitore vengono salvati in una directory temporanea esclusivamente per il tempo necessario '
+            'all’elaborazione. La directory viene rimossa dopo l’invio del risultato oppure quando la richiesta termina con un errore. '
+            'Potube Web non offre uno storico dei file caricati e non utilizza il loro contenuto per finalità pubblicitarie o di analytics.',
+          ),
         ]),
-        el('h2', children: [text('Limite gratuito e protezione dagli abusi')]),
+        el('h2', children: [text('Dati tecnici e protezione dagli abusi')]),
         el('p', children: [
-          text('Durante la beta può essere utilizzato l’indirizzo IP, o un identificatore tecnico equivalente fornito dall’infrastruttura, per applicare un limite temporaneo alle conversioni e proteggere il servizio dagli abusi. Il contatore MVP è mantenuto in memoria e può azzerarsi al riavvio dell’istanza.'),
+          text(
+            'L’indirizzo IP, o un identificatore tecnico equivalente fornito dall’infrastruttura, può essere utilizzato temporaneamente '
+            'per applicare limiti di utilizzo, proteggere il servizio da richieste abusive e garantire la stabilità del convertitore. '
+            'Durante la beta il contatore anti-abuso è mantenuto in memoria e può azzerarsi quando l’istanza viene riavviata.',
+          ),
         ]),
-        el('h2', children: [text('Analytics')]),
+        el('h2', children: [text('Google Analytics')]),
         el('p', children: [
-          text('Google Analytics 4 può essere attivato per misurare visite e utilizzo generale del sito. Lo script Analytics viene caricato soltanto dopo il consenso esplicito dell’utente. È possibile rifiutare Analytics scegliendo “Solo necessari”.'),
+          text(
+            'Google Analytics 4 può essere utilizzato per misurare visite e utilizzo generale del sito. Nel setup Potube lo script '
+            'Analytics viene caricato solo dopo una scelta positiva dell’utente. I file caricati nel convertitore non vengono inviati ad Analytics.',
+          ),
         ]),
-        el('h2', children: [text('Pubblicità e cookie')]),
+        el('h2', children: [text('Pubblicità, AdSense e consenso')]),
         el('p', children: [
-          text('Gli spazi pubblicitari presenti nella beta sono placeholder e non caricano reti pubblicitarie. Prima dell’attivazione di AdSense o servizi analoghi verrà adottata una CMP adeguata e questa informativa verrà aggiornata.'),
+          text(
+            'Potube Web può utilizzare Google AdSense per mostrare annunci. Quando richiesto dalla normativa applicabile, la gestione '
+            'del consenso pubblicitario viene affidata a una piattaforma di gestione del consenso compatibile con i requisiti Google. '
+            'Le preferenze dell’utente possono influire sulla personalizzazione e sulla misurazione degli annunci.',
+          ),
+        ]),
+        el('h2', children: [text('Cookie e archiviazione locale')]),
+        el('p', children: [
+          text(
+            'Il sito può utilizzare tecnologie di archiviazione locale per ricordare le preferenze privacy. Servizi di terze parti '
+            'come Analytics o AdSense possono utilizzare cookie o tecnologie analoghe solo secondo le impostazioni di consenso applicabili.',
+          ),
+        ]),
+        el('h2', children: [text('Conservazione')]),
+        el('p', children: [
+          text(
+            'Potube limita la conservazione dei dati tecnici a quanto necessario per erogare e proteggere il servizio. I file di conversione '
+            'sono temporanei; eventuali dati gestiti da fornitori terzi seguono i rispettivi criteri di conservazione e le configurazioni adottate.',
+          ),
+        ]),
+        el('h2', children: [text('Diritti e richieste')]),
+        el('p', children: [
+          text(
+            'Per richieste relative a privacy, dati personali o esercizio dei diritti previsti dalla normativa applicabile è necessario '
+            'utilizzare il canale di contatto del gestore del sito. Prima dell’attivazione commerciale definitiva verrà pubblicato un recapito dedicato.',
+          ),
         ]),
       ]),
     );
