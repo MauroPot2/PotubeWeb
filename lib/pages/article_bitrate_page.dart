@@ -13,16 +13,55 @@ class ArticleBitratePage extends StatelessComponent {
         el('span', classes: 'eyebrow', children: [text('GUIDA AUDIO')]),
         el('h1', children: [text('MP3: 128, 192, 256 o 320 kbps?')]),
         el('p', classes: 'article-lead', children: [
-          text('Il bitrate indica quanti kilobit al secondo vengono usati per rappresentare l’audio compresso. Più alto non significa automaticamente “audio migliore”.'),
+          text(
+            'Il bitrate indica quanti kilobit al secondo vengono destinati all’audio compresso. '
+            'Più alto significa generalmente meno compressione, ma non significa automaticamente “audio migliore”.',
+          ),
         ]),
-        el('h2', children: [text('192 kbps: il default equilibrato')]),
-        el('p', children: [text('Per ascolto quotidiano offre spesso un buon compromesso tra dimensione e qualità, soprattutto quando la sorgente è già compressa.')]),
-        el('h2', children: [text('320 kbps: meno compressione, file più grande')]),
-        el('p', children: [text('È utile quando vuoi limitare ulteriormente le perdite introdotte dalla ricodifica. Non trasforma però una sorgente compressa in lossless.')]),
+        el('h2', children: [text('La qualità della sorgente viene prima del bitrate')]),
+        el('p', children: [
+          text(
+            'Se la sorgente ha già perso dettaglio a causa di una precedente compressione, esportarla a 320 kbps non può ricostruire '
+            'le informazioni mancanti. Il bitrate di uscita decide come comprimere ciò che è disponibile in quel momento.',
+          ),
+        ]),
+        el('h2', children: [text('128 kbps: quando conta soprattutto lo spazio')]),
+        el('p', children: [
+          text(
+            'Può essere sufficiente per parlato, bozze, ascolto non critico o quando la dimensione del file è più importante della fedeltà. '
+            'Su materiale musicale complesso le differenze possono diventare più percepibili.',
+          ),
+        ]),
+        el('h2', children: [text('192 kbps: il compromesso della beta Potube')]),
+        el('p', children: [
+          text(
+            'Per molti utilizzi quotidiani offre un equilibrio ragionevole tra dimensione e compressione. Per questo Potube Web lo usa '
+            'come valore predefinito nella beta gratuita.',
+          ),
+        ]),
         const AdSlot(label: 'Pubblicità · guida'),
-        el('h2', children: [text('Quando scegliere 128 o 256 kbps')]),
-        el('p', children: [text('128 kbps privilegia dimensioni ridotte; 256 kbps è un compromesso più conservativo quando lo spazio non è un problema.')]),
-        el('a', classes: 'primary-button inline-button', attributes: {'href': '/#convert'}, children: [text('Apri il convertitore')]),
+        el('h2', children: [text('256 e 320 kbps: meno compressione, file più grandi')]),
+        el('p', children: [
+          text(
+            'Sono opzioni più conservative quando vuoi ridurre ulteriormente le perdite introdotte da una nuova codifica. '
+            'Restano però formati lossy e non trasformano una sorgente compressa in audio lossless.',
+          ),
+        ]),
+        el('h2', children: [text('Regola pratica')]),
+        el('p', children: [
+          text(
+            'Se non hai un requisito specifico, parti dalla sorgente migliore disponibile e scegli il bitrate in base all’uso finale. '
+            'Per ascolto comune 192 kbps è spesso una scelta sensata; per voce o file leggeri 128 kbps può bastare.',
+          ),
+        ]),
+        el('div', classes: 'article-actions', children: [
+          el('a', classes: 'primary-button inline-button', attributes: {'href': '/#convert'}, children: [
+            text('Apri il convertitore'),
+          ]),
+          el('a', classes: 'text-link', attributes: {'href': '/guide'}, children: [
+            text('Tutte le guide →'),
+          ]),
+        ]),
       ]),
     );
   }
