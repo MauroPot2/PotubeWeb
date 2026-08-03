@@ -80,6 +80,9 @@ def youtube_audio_case_study(
     if shutil.which("ffmpeg") is None:
         raise HTTPException(status_code=503, detail="FFmpeg non disponibile sul server.")
 
+    if shutil.which("node") is None:
+        raise HTTPException(status_code=503, detail="Runtime JavaScript non disponibile sul server.")
+
     remaining, reset_seconds = _consume_rate_limit(_client_key(request))
 
     temp_dir = tempfile.mkdtemp(prefix="potube-youtube-lab-")
@@ -89,6 +92,8 @@ def youtube_audio_case_study(
     command = [
         yt_dlp_path,
         "--ignore-config",
+        "--js-runtimes",
+        "node",
         "--no-playlist",
         "--max-downloads",
         "1",
