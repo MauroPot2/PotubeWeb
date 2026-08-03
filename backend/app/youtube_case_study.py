@@ -12,7 +12,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
-from app.main import _cleanup, _client_key, _consume_rate_limit
+from .main import _cleanup, _client_key, _consume_rate_limit
 
 router = APIRouter()
 
