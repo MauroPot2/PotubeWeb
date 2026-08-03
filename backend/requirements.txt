@@ -1,4 +1,4 @@
 fastapi==0.139.2
 uvicorn[standard]>=0.35,<1
 python-multipart==0.0.32
-yt-dlp>=2025.1,<2027
+yt-dlp[default]>=2025.1,<2027
