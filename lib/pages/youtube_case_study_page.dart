@@ -1,0 +1,104 @@
+import 'package:jaspr/dom.dart';
+import 'package:jaspr/jaspr.dart';
+import 'package:potube_web/components/site_scaffold.dart';
+
+class YoutubeCaseStudyPage extends StatelessComponent {
+  const YoutubeCaseStudyPage({super.key});
+
+  @override
+  Component build(BuildContext context) {
+    return SiteScaffold(
+      child: el('section', classes: 'section', children: [
+        el('div', classes: 'container narrow lab-page', children: [
+          el('span', classes: 'pill', children: [text('Potube Lab · case study')]),
+          el('h1', children: [text('YouTube → MP3')]),
+          el('p', classes: 'article-lead', children: [
+            text(
+              'Pagina sperimentale non presente nella navigazione pubblica. '
+              'Usala esclusivamente con contenuti tuoi, di pubblico dominio o per cui hai ricevuto il permesso al download.',
+            ),
+          ]),
+          el('div', classes: 'lab-notice', children: [
+            el('strong', children: [text('Accesso protetto')]),
+            el('p', children: [
+              text(
+                'La funzionalità è disabilitata se sul backend non è configurata la chiave privata del case study. '
+                'La chiave non viene salvata nel sito o nel repository.',
+              ),
+            ]),
+          ]),
+          el('div', classes: 'converter-card lab-card', children: [
+            el('div', classes: 'converter-heading', children: [
+              el('span', classes: 'eyebrow', children: [text('LAB')]),
+              el('h2', children: [text('Estrai una traccia audio')]),
+              el('p', children: [
+                text('Singolo video, niente playlist, massimo 15 minuti e massimo 192 kbps.'),
+              ]),
+            ]),
+            el(
+              'form',
+              classes: 'converter-form',
+              attributes: {
+                'action': '/api/lab/youtube-audio',
+                'method': 'post',
+              },
+              children: [
+                el('label', classes: 'field', children: [
+                  text('URL YouTube'),
+                  el('input', attributes: {
+                    'type': 'url',
+                    'name': 'url',
+                    'placeholder': 'https://www.youtube.com/watch?v=…',
+                    'required': 'required',
+                    'autocomplete': 'off',
+                  }),
+                  el('span', classes: 'field-hint', children: [
+                    text('Sono accettati solo youtube.com, music.youtube.com e youtu.be.'),
+                  ]),
+                ]),
+                el('div', classes: 'form-grid', children: [
+                  el('label', classes: 'field', children: [
+                    text('Qualità MP3'),
+                    el('select', attributes: {'name': 'quality'}, children: [
+                      el('option', attributes: {'value': '128'}, children: [text('128 kbps')]),
+                      el('option', attributes: {'value': '192', 'selected': 'selected'}, children: [text('192 kbps')]),
+                    ]),
+                  ]),
+                  el('label', classes: 'field', children: [
+                    text('Chiave case study'),
+                    el('input', attributes: {
+                      'type': 'password',
+                      'name': 'case_study_key',
+                      'placeholder': 'Chiave privata',
+                      'required': 'required',
+                      'autocomplete': 'off',
+                    }),
+                  ]),
+                ]),
+                el('label', classes: 'legal-check', children: [
+                  el('input', attributes: {
+                    'type': 'checkbox',
+                    'name': 'rights_confirmed',
+                    'value': 'yes',
+                    'required': 'required',
+                  }),
+                  el('span', children: [
+                    text(
+                      'Confermo di avere il diritto o il permesso di scaricare ed elaborare questo contenuto.',
+                    ),
+                  ]),
+                ]),
+                el('button', classes: 'primary-button', attributes: {'type': 'submit'}, children: [
+                  text('Scarica MP3'),
+                ]),
+                el('p', classes: 'microcopy', children: [
+                  text('Il file temporaneo viene eliminato dopo l’invio della risposta.'),
+                ]),
+              ],
+            ),
+          ]),
+        ]),
+      ]),
+    );
+  }
+}
