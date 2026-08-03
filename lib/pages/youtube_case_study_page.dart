@@ -5,29 +5,35 @@ import 'package:potube_web/components/site_scaffold.dart';
 class YoutubeCaseStudyPage extends StatelessComponent {
   const YoutubeCaseStudyPage({super.key});
 
+  static const _inputStyle =
+      'width:100%;border:1px solid var(--line);background:#10141c;color:var(--text);'
+      'border-radius:13px;padding:12px 14px;';
+
   @override
   Component build(BuildContext context) {
     return SiteScaffold(
       child: el('section', classes: 'section', children: [
-        el('div', classes: 'container narrow lab-page', children: [
+        el('div', classes: 'container narrow', children: [
           el('span', classes: 'pill', children: [text('Potube Lab · case study')]),
-          el('h1', children: [text('YouTube → MP3')]),
+          el('h1', attributes: {
+            'style': 'font-size:clamp(42px,7vw,70px);line-height:1;letter-spacing:-.05em;margin:14px 0 18px;',
+          }, children: [text('YouTube → MP3')]),
           el('p', classes: 'article-lead', children: [
             text(
               'Pagina sperimentale non presente nella navigazione pubblica. '
               'Usala esclusivamente con contenuti tuoi, di pubblico dominio o per cui hai ricevuto il permesso al download.',
             ),
           ]),
-          el('div', classes: 'lab-notice', children: [
-            el('strong', children: [text('Accesso protetto')]),
-            el('p', children: [
-              text(
-                'La funzionalità è disabilitata se sul backend non è configurata la chiave privata del case study. '
-                'La chiave non viene salvata nel sito o nel repository.',
-              ),
-            ]),
+          el('div', classes: 'free-badge', children: [
+            el('strong', children: [text('Accesso protetto · ')]),
+            text(
+              'la funzionalità è disabilitata se sul backend non è configurata la chiave privata del case study. '
+              'La chiave non viene salvata nel sito o nel repository.',
+            ),
           ]),
-          el('div', classes: 'converter-card lab-card', children: [
+          el('div', classes: 'converter-card', attributes: {
+            'style': 'margin-top:28px;',
+          }, children: [
             el('div', classes: 'converter-heading', children: [
               el('span', classes: 'eyebrow', children: [text('LAB')]),
               el('h2', children: [text('Estrai una traccia audio')]),
@@ -51,6 +57,7 @@ class YoutubeCaseStudyPage extends StatelessComponent {
                     'placeholder': 'https://www.youtube.com/watch?v=…',
                     'required': 'required',
                     'autocomplete': 'off',
+                    'style': _inputStyle,
                   }),
                   el('span', classes: 'field-hint', children: [
                     text('Sono accettati solo youtube.com, music.youtube.com e youtu.be.'),
@@ -72,6 +79,7 @@ class YoutubeCaseStudyPage extends StatelessComponent {
                       'placeholder': 'Chiave privata',
                       'required': 'required',
                       'autocomplete': 'off',
+                      'style': _inputStyle,
                     }),
                   ]),
                 ]),
